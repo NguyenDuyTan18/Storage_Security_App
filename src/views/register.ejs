@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Secure File Storage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .switch-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        .switch-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .switch-link a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1>Đăng ký</h1>
+        
+        <% if (typeof error !== 'undefined') { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+        
+        <form action="/auth/register" method="POST">
+            <div class="form-group">
+                <label>Tên đăng nhập</label>
+                <input type="text" name="username" placeholder="Nhập tên đăng nhập" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Nhập email" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" name="password" placeholder="Nhập mật khẩu" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Xác nhận mật khẩu</label>
+                <input type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu" required>
+            </div>
+            
+            <button type="submit" class="btn">Đăng ký</button>
+        </form>
+        
+        <div class="switch-link">
+            Đã có tài khoản? <a href="/login">Đăng nhập</a>
+        </div>
+    </div>
+</body>
+</html>

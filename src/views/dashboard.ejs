@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Secure File Storage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+        }
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .user-info {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .user-info h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            width: 150px;
+        }
+        .info-value {
+            color: #333;
+        }
+        .files-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .files-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .upload-form {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .upload-form input[type="file"] {
+            margin-right: 10px;
+        }
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .file-list {
+            list-style: none;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-name {
+            font-weight: 600;
+            color: #333;
+        }
+        .file-meta {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .file-actions a {
+            color: #667eea;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+        .file-actions a:hover {
+            text-decoration: underline;
+        }
+        .file-actions .delete {
+            color: #dc3545;
+        }
+        .no-files {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Secure File Storage</h1>
+        <div>
+            <span style="margin-right: 20px;">Xin chào, <strong><%= user.username %></strong></span>
+            <a href="/logout" class="logout-btn">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="user-info">
+            <h2>👤 Thông tin tài khoản</h2>
+            <div class="info-row">
+                <span class="info-label">Username:</span>
+                <span class="info-value"><%= user.username %></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value"><%= user.email %></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Vai trò:</span>
+                <span class="info-value"><%= user.role %></span>
+            </div>
+        </div>
+
+        <div class="files-section">
+            <h2>📁 Quản lý file</h2>
+            
+            <div class="upload-form">
+                <form action="/files/upload" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" required>
+                    <button type="submit" class="upload-btn">📤 Upload file</button>
+                </form>
+            </div>
+
+            <% if (typeof files !== 'undefined' && files.length > 0) { %>
+                <ul class="file-list">
+                    <% files.forEach(function(file) { %>
+                        <li class="file-item">
+                            <div class="file-info">
+                                <div class="file-name"><%= file.original_name %></div>
+                                <div class="file-meta">
+                                    Kích thước: <%= (file.file_size / 1024).toFixed(2) %> KB | 
+                                    Ngày tải: <%= file.created_at %>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <a href="/files/download/<%= file.id %>">⬇️ Tải xuống</a>
+                                <a href="/files/delete/<%= file.id %>" class="delete" onclick="return confirm('Bạn có chắc muốn xóa file này?')">🗑️ Xóa</a>
+                            </div>
+                        </li>
+                    <% }); %>
+                </ul>
+            <% } else { %>
+                <div class="no-files">
+                    <p>Chưa có file nào. Hãy upload file đầu tiên của bạn!</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>
