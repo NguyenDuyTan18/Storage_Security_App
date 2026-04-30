@@ -1,0 +1,10 @@
+# Các file bí mật
+.env
+.env.local
+.env.*
+
+# Thư mục chứa thư viện
+node_modules/
+
+# Thư mục upload file (nếu bạn không muốn đưa file user lên github)
+/src/uploads/

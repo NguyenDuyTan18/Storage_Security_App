@@ -10,7 +10,7 @@ exports.upload = async (req, res) => {
         }
 
         const result = await FileService.uploadFile(req.file, req.user.id, req);
-        res.status(201).json({ message: 'File uploaded successfully', file: result });
+        res.redirect('/dashboard');
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

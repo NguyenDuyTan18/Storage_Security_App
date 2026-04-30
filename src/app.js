@@ -92,65 +92,65 @@ app.use(async (req, res, next) => {
 // });
 
 // Handle file upload form
-app.post('/files/upload', async (req, res) => {
-    if (!req.user) {
-        return res.redirect('/auth/login');
-    }
+// app.post('/files/upload', async (req, res) => {
+//     if (!req.user) {
+//         return res.redirect('/auth/login');
+//     }
     
-    // Multer middleware will handle the file
-    const upload = require('./middleware/upload');
+//     // Multer middleware will handle the file
+//     const upload = require('./middleware/upload');
     
-    upload.single('file')(req, res, async (err) => {
-        if (err) {
-            return res.redirect('/dashboard?error=' + encodeURIComponent(err.message));
-        }
+//     upload.single('file')(req, res, async (err) => {
+//         if (err) {
+//             return res.redirect('/dashboard?error=' + encodeURIComponent(err.message));
+//         }
         
-        if (!req.file) {
-            return res.redirect('/dashboard?error=Không có file được chọn');
-        }
+//         if (!req.file) {
+//             return res.redirect('/dashboard?error=Không có file được chọn');
+//         }
         
-        try {
-            const FileService = require('./services/FileService');
-            await FileService.uploadFile(req.file, req.user.id, req);
-            res.redirect('/dashboard?success=Upload thành công');
-        } catch (error) {
-            res.redirect('/dashboard?error=' + encodeURIComponent(error.message));
-        }
-    });
-});
+//         try {
+//             const FileService = require('./services/FileService');
+//             await FileService.uploadFile(req.file, req.user.id, req);
+//             res.redirect('/dashboard?success=Upload thành công');
+//         } catch (error) {
+//             res.redirect('/dashboard?error=' + encodeURIComponent(error.message));
+//         }
+//     });
+// });
 
 // Handle file download
-app.get('/files/download/:id', async (req, res) => {
-    if (!req.user) {
-        return res.redirect('/auth/login');
-    }
+// app.get('/files/download/:id', async (req, res) => {
+//     if (!req.user) {
+//         return res.redirect('/auth/login');
+//     }
     
-    try {
-        const FileService = require('./services/FileService');
-        const result = await FileService.downloadFile(req.params.id, req.user.id, req);
+//     try {
+//         const FileService = require('./services/FileService');
+//         const result = await FileService.downloadFile(req.params.id, req.user.id, req);
         
-        res.setHeader('Content-Type', result.mime_type);
-        res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
-        res.send(result.data);
-    } catch (error) {
-        res.redirect('/dashboard?error=' + encodeURIComponent(error.message));
-    }
-});
+//         res.setHeader('Content-Type', result.mime_type);
+//         res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
+//         res.send(result.data);
+//     } catch (error) {
+//         res.redirect('/dashboard?error=' + encodeURIComponent(error.message));
+//     }
+// });
 
 // Handle file delete
-app.get('/files/delete/:id', async (req, res) => {
-    if (!req.user) {
-        return res.redirect('/auth/login');
-    }
+// app.get('/files/delete/:id', async (req, res) => {
+//     if (!req.user) {
+//         return res.redirect('/auth/login');
+//     }
     
-    try {
-        const FileService = require('./services/FileService');
-        await FileService.deleteFile(req.params.id, req.user.id, req);
-        res.redirect('/dashboard?success=Xóa thành công');
-    } catch (error) {
-        res.redirect('/dashboard?error=' + encodeURIComponent(error.message));
-    }
-});
+//     try {
+//         const FileService = require('./services/FileService');
+//         await FileService.deleteFile(req.params.id, req.user.id, req);
+//         res.redirect('/dashboard?success=Xóa thành công');
+//     } catch (error) {
+//         res.redirect('/dashboard?error=' + encodeURIComponent(error.message));
+//     }
+// });
 
 // ==================== API ROUTES ====================
 

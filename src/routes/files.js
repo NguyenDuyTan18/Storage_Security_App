@@ -8,7 +8,7 @@ const upload = require('../middleware/upload');
 router.use(authenticate);
 
 // File CRUD operations
-router.post('/', upload.single('file'), fileController.upload);
+router.post('/upload', upload.single('file'), upload.secureUpload, fileController.upload);
 router.get('/', fileController.getAll);
 router.get('/:id/download', fileController.download);
 router.delete('/:id', fileController.delete);

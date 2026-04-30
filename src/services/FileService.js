@@ -11,94 +11,72 @@ class FileService {
      * Upload and encrypt a file
      */
     static async uploadFile(file, userId, req = null) {
-        // Generate unique filename
         const fileId = crypto.randomUUID();
-        const ext = path.extname(file.originalname);
-        const filename = `${fileId}${ext}`;
-        const filePath = path.join(config.uploadDir, filename);
+        const filePath = path.join(config.uploadDir, `${fileId}${path.extname(file.originalname)}`);
 
-        // Generate encryption key for this file
-        const encryptionKey = EncryptionService.generateKey();
+        // 1. Tạo key ngẫu nhiên cho file này
+        const fileKey = crypto.randomBytes(32); 
 
-        // Read file buffer
-        const fileBuffer = file.buffer;
-
-        // Encrypt file
-        const { data: encryptedData, iv } = EncryptionService.encryptFile(fileBuffer, encryptionKey);
-
-        // Save encrypted file
+        // 2. Mã hóa file bằng fileKey
+        const { data: encryptedData, iv: fileIv } = EncryptionService.encryptFile(file.buffer, fileKey);
         fs.writeFileSync(filePath, encryptedData);
 
-        // Hash the encryption key for storage (to verify later)
-        const encryptionKeyHash = EncryptionService.hashKey(encryptionKey);
+        // 3. MÃ HÓA CÁI KEY bằng Master Key (Key Wrap)
+        const { encryptedKey, keyIv } = EncryptionService.wrapKey(fileKey);
 
-        // Save file record to database
+        // console.log("DEBUG VALUES:", {
+        //     userId,
+        //     fileIv,
+        //     encryptedKey,
+        //     keyIv,
+        //     size: file.size,
+        //     mime: file.mimetype
+        // });
+
+        // 4. Lưu vào DB
         const savedFileId = await FileModel.create({
             user_id: userId,
-            filename: filename,
+            filename: `${fileId}${path.extname(file.originalname)}`,
             original_name: file.originalname,
             file_path: filePath,
-            file_size: file.size,
-            mime_type: file.mimetype,
-            encryption_iv: iv,
-            encryption_key_hash: encryptionKeyHash
+            
+            // BỔ SUNG 2 DÒNG NÀY:
+            file_size: file.size,        // Phải đúng tên 'file_size' như Model mong đợi
+            mime_type: file.mimetype,    // Phải đúng tên 'mime_type' như Model mong đợi
+            
+            encryption_iv: fileIv,
+            encrypted_file_key: encryptedKey,
+            key_wrap_iv: keyIv
         });
 
-        // Log the upload
-        await LogModel.log('file_upload', 'file', savedFileId, { 
-            original_name: file.originalname, 
-            size: file.size 
-        }, req);
-
-        return {
-            id: savedFileId,
-            filename: file.originalname,
-            size: file.size,
-            created_at: new Date()
-        };
-    }
+        return { id: savedFileId, filename: file.originalname };
+}
 
     /**
      * Download and decrypt a file
      */
     static async downloadFile(fileId, userId, req = null) {
-        // Get file record
         const file = await FileModel.findById(fileId);
-        
-        if (!file) {
-            throw new Error('File not found');
-        }
+        if (!file) throw new Error('File not found');
 
-        // Check ownership (admin can access any file)
-        if (file.user_id !== userId && req?.user?.role !== 'admin') {
-            throw new Error('Access denied');
-        }
+        // 1. Dùng Master Key từ .env để giải mã lấy lại File Key gốc
+        const originalFileKey = EncryptionService.unwrapKey(
+            file.encrypted_file_key, 
+            file.key_wrap_iv
+        );
 
-        // Read encrypted file
+        // 2. Đọc file đã mã hóa từ ổ cứng
         const encryptedData = fs.readFileSync(file.file_path);
 
-        // For demo purposes, we use a derived key
-        // In production, you would store the encrypted key per file
-        const derivedKey = crypto.scryptSync(userId.toString(), 'salt', 32);
-
-        // Decrypt file
+        // 3. Giải mã file bằng key gốc đã lấy lại được
         const decryptedData = EncryptionService.decryptFile(
             encryptedData, 
-            derivedKey, 
+            originalFileKey, 
             file.encryption_iv
         );
 
-        // Log the download
-        await LogModel.log('file_download', 'file', fileId, {
-            original_name: file.original_name
-        }, req);
-
-        return {
-            data: decryptedData,
-            filename: file.original_name,
-            mime_type: file.mime_type
-        };
-    }
+        return { data: decryptedData, filename: file.original_name };
+}
 
     /**
      * Delete a file

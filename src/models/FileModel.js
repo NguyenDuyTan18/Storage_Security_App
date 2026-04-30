@@ -1,91 +1,87 @@
-const { pool } = require('../config/database');
+// Import hàm executeQuery từ file cấu hình database của bạn
+const { executeQuery } = require('../config/database'); 
 
 class FileModel {
     /**
-     * Create a new file record
+     * Tạo bản ghi file mới
      */
-    static async create(fileData) {
-        const {
-            user_id,
-            filename,
-            original_name,
-            file_path,
-            file_size,
-            mime_type,
-            encryption_iv,
-            encryption_key_hash
-        } = fileData;
-
+    static async create(data) {
         const sql = `
             INSERT INTO files (
                 user_id, filename, original_name, file_path, file_size,
-                mime_type, encryption_iv, encryption_key_hash
+                mime_type, encryption_iv, encrypted_file_key, key_wrap_iv
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        const [result] = await pool.execute(sql, [
-            user_id, filename, original_name, file_path, file_size,
-            mime_type, encryption_iv, encryption_key_hash
-        ]);
+        const params = [
+            data.user_id,
+            data.filename,
+            data.original_name,
+            data.file_path,
+            data.file_size ?? 0,
+            data.mime_type ?? 'application/octet-stream',
+            data.encryption_iv,
+            data.encrypted_file_key,
+            data.key_wrap_iv
+        ];
 
+        // Sử dụng executeQuery đã được bọc sẵn try/catch
+        const result = await executeQuery(sql, params);
         return result.insertId;
     }
 
     /**
-     * Find file by ID
+     * Tìm file theo ID để giải mã
      */
     static async findById(id) {
         const sql = 'SELECT * FROM files WHERE id = ?';
-        const [rows] = await pool.execute(sql, [id]);
-        return rows[0];
+        const rows = await executeQuery(sql, [id]);
+        return rows[0]; // Trả về bản ghi đầu tiên
     }
 
     /**
-     * Get all files for a user
+     * Lấy danh sách file của một User cụ thể
      */
     static async getByUserId(userId) {
         const sql = `
-            SELECT id, original_name, file_path, file_size, mime_type,
-                   encryption_iv, created_at
-            FROM files
-            WHERE user_id = ?
+            SELECT id, original_name, file_size, mime_type, created_at 
+            FROM files 
+            WHERE user_id = ? 
             ORDER BY created_at DESC
         `;
-        const [rows] = await pool.execute(sql, [userId]);
-        return rows;
+        return await executeQuery(sql, [userId]);
     }
 
     /**
-     * Get all files (admin only)
+     * Lấy tất cả file kèm tên User (Dành cho Admin)
      */
     static async getAll() {
         const sql = `
-            SELECT f.*, u.username
+            SELECT f.*, u.username 
             FROM files f
             JOIN users u ON f.user_id = u.id
             ORDER BY f.created_at DESC
         `;
-        const [rows] = await pool.execute(sql);
-        return rows;
+        return await executeQuery(sql);
     }
 
     /**
-     * Delete file by ID
+     * Xóa file khỏi database
      */
     static async delete(id, userId) {
         const sql = 'DELETE FROM files WHERE id = ? AND user_id = ?';
-        const [result] = await pool.execute(sql, [id, userId]);
+        const result = await executeQuery(sql, [id, userId]);
         return result.affectedRows;
     }
 
     /**
-     * Get file count for a user
+     * Đếm tổng số file của User
      */
     static async getUserFileCount(userId) {
         const sql = 'SELECT COUNT(*) as count FROM files WHERE user_id = ?';
-        const [rows] = await pool.execute(sql, [userId]);
-        return rows[0].count;
+        const rows = await executeQuery(sql, [userId]);
+        return rows[0]?.count || 0;
     }
 }
 
