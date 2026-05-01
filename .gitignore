@@ -8,3 +8,5 @@ node_modules/
 
 # Thư mục upload file (nếu bạn không muốn đưa file user lên github)
 /src/uploads/
+
+README.md
