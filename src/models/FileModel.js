@@ -41,6 +41,15 @@ class FileModel {
     }
 
     /**
+     * Tìm ID theo id file để giải mã
+     */
+    static async findUserFileById(fileId) {
+        const sql = 'SELECT user_id FROM files WHERE id = ?';
+        const rows = await executeQuery(sql, [fileId]);
+        return rows[0]?.user_id; // Trả về user_id hoặc undefined nếu không tìm thấy
+    }
+
+    /**
      * Lấy danh sách file của một User cụ thể
      */
     static async getByUserId(userId) {

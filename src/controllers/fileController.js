@@ -22,15 +22,19 @@ exports.upload = async (req, res) => {
 exports.download = async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await FileService.downloadFile(id, req.user.id, req);
+        const userId = req.user.id;
+        const result = await FileService.downloadFile(id, userId, req);
 
         res.setHeader('Content-Type', result.mime_type);
         res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
         res.send(result.data);
     } catch (error) {
-        res.status(404).json({ error: error.message });
-    }
-};
+        if (error.status === 403) {
+            const statusCode = error.status || 500; 
+            res.status(statusCode).json({ error: error.message });
+        }
+    };
+}
 
 /**
  * Delete a file
@@ -39,7 +43,7 @@ exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
         await FileService.deleteFile(id, req.user.id, req);
-        res.json({ message: 'File deleted successfully' });
+        res.redirect('/dashboard');
     } catch (error) {
         res.status(404).json({ error: error.message });
     }

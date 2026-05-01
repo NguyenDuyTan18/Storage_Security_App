@@ -13,7 +13,7 @@ exports.register = async (req, res) => {
         }
 
         const user = await AuthService.register({ username, email, password });
-        res.status(201).json({ message: 'User registered successfully', user });
+        res.redirect('/dashboard');
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

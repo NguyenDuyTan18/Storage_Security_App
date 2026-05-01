@@ -139,6 +139,18 @@
             color: #888;
             padding: 40px;
         }
+        .btn-link-delete {
+        background: none;
+        border: none;
+        color: #ff4d4d; /* Màu đỏ cho nút xóa */
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 0;
+        font: inherit;
+        }
+        .btn-link-delete:hover {
+            color: #cc0000;
+        }
     </style>
 </head>
 <body>
@@ -189,8 +201,12 @@
                                 </div>
                             </div>
                             <div class="file-actions">
-                                <a href="/files/download/<%= file.id %>">⬇️ Tải xuống</a>
-                                <a href="/files/delete/<%= file.id %>" class="delete" onclick="return confirm('Bạn có chắc muốn xóa file này?')">🗑️ Xóa</a>
+                                <a href="/api/files/download/<%= file.id %>">⬇️ Tải xuống</a>
+
+                                <!-- Dùng form để gửi request POST thay vì GET -->
+                                <form action="/api/files/delete/<%= file.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa file này?')">
+                                    <button type="submit" class="btn-link-delete">🗑️ Xóa</button>
+                                </form>
                             </div>
                         </li>
                     <% }); %>

@@ -58,7 +58,13 @@ class FileService {
     static async downloadFile(fileId, userId, req = null) {
         const file = await FileModel.findById(fileId);
         if (!file) throw new Error('File not found');
-
+        // Tránh IDOR 
+        const isOwner = await FileModel.findUserFileById(fileId) === userId;
+        if (!isOwner){ 
+            const error = new Error('Access denied');
+            error.status = 403; // Gán mã lỗi trực tiếp vào object error
+            throw error; 
+        }
         // 1. Dùng Master Key từ .env để giải mã lấy lại File Key gốc
         const originalFileKey = EncryptionService.unwrapKey(
             file.encrypted_file_key, 
@@ -75,7 +81,7 @@ class FileService {
             file.encryption_iv
         );
 
-        return { data: decryptedData, filename: file.original_name };
+        return { data: decryptedData, filename: file.original_name, mime_type: file.mime_type };
 }
 
     /**
